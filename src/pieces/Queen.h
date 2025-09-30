@@ -7,10 +7,11 @@ class Queen : public Piece {
 
 public:
 
-    Queen(PieceColor c, BoardLocation location);
+    Queen(PieceColor color, BoardLocation location);
     virtual ~Queen() override;
     
-    virtual void get_possible_moves(int board_width, int board_height, std::vector<BoardLocation>& possible_moves) override;
+    virtual void get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, std::vector<Move>& possible_moves) override;
+    virtual bool is_capturable() const override;
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "../BoardLocation.h"
+#include "../moves.h"
 
 enum class PieceColor {
     WHITE,
@@ -16,13 +17,13 @@ class Piece {
 
 public:
 
-    Piece(PieceColor c, BoardLocation location);
-
+    Piece(PieceColor color, BoardLocation location);
     virtual ~Piece() = 0;
 
-    // Gets the possible moves for the piece in isolation, as if no other pieces are on the board.
-    virtual void get_possible_moves(int board_width, int board_height, std::vector<BoardLocation>& possible_moves) = 0;
+    virtual void get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, std::vector<Move>& possible_moves) = 0;
+    virtual bool is_capturable() const = 0;
 
+    BoardLocation get_location() const;
     PieceColor get_color() const;
 
 protected:
@@ -30,8 +31,8 @@ protected:
     BoardLocation location;
     PieceColor color;
     
-    void add_directional_moves(int board_width, int board_height, const BoardLocation& current_pos, 
-                               int dx, int dy, std::vector<BoardLocation>& possible_moves);
+    void add_directional_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, int dx, int dy, std::vector<Move>& possible_moves);
+    void process_possible_destinations(int board_width, int board_height, const std::vector<Piece*>& active_pieces, const std::vector<BoardLocation>& destinations, std::vector<Move>& possible_moves);
 };
 
 #endif
