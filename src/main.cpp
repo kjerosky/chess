@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <iostream>
+#include <cmath>
 
 #include "Game.h"
 #include "input.h"
@@ -62,6 +63,7 @@ int main() {
     float right_mouse_button_down_x = -1;
     float right_mouse_button_down_y = -1;
     MouseClickEvent mouse_click_event;
+    const int MOUSE_CLICK_POSITION_TOLERANCE = 10;
 
     bool is_running = true;
     while (is_running) {
@@ -84,10 +86,10 @@ int main() {
                     right_mouse_button_down_y = event.button.y;
                 }
             } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-                if (event.button.button == SDL_BUTTON_LEFT && event.button.x == left_mouse_button_down_x && event.button.y == left_mouse_button_down_y) {
+                if (event.button.button == SDL_BUTTON_LEFT && abs(event.button.x - left_mouse_button_down_x) < MOUSE_CLICK_POSITION_TOLERANCE && abs(event.button.y - left_mouse_button_down_y) < MOUSE_CLICK_POSITION_TOLERANCE) {
                     mouse_click_event = { event.button.x, event.button.y, SDL_BUTTON_LEFT };
                     current_mouse_click_event = &mouse_click_event;
-                } else if (event.button.button == SDL_BUTTON_RIGHT && event.button.x == right_mouse_button_down_x && event.button.y == right_mouse_button_down_y) {
+                } else if (event.button.button == SDL_BUTTON_RIGHT && abs(event.button.x - right_mouse_button_down_x) < MOUSE_CLICK_POSITION_TOLERANCE && abs(event.button.y - right_mouse_button_down_y) < MOUSE_CLICK_POSITION_TOLERANCE) {
                     mouse_click_event = { event.button.x, event.button.y, SDL_BUTTON_RIGHT };
                     current_mouse_click_event = &mouse_click_event;
                 }

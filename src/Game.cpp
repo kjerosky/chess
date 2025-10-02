@@ -17,7 +17,10 @@ pieces_texture(pieces_texture),
 light_square_color({ 255, 206, 158, 255 }),
 dark_square_color({ 209, 139, 71, 255 }),
 white_piece_color({ 255, 255, 255, 255 }),
-black_piece_color({ 0, 0, 0, 255 }) {
+black_piece_color({ 0, 0, 0, 255 }),
+selected_color({ 0, 0, 255, 255 }),
+move_color({ 0, 255, 0, 255 }),
+capture_color({ 255, 0, 0, 255 }) {
     reset();
 }
 
@@ -82,7 +85,7 @@ void Game::process_input(int window_width, int window_height, MouseClickEvent* m
 
     int board_relative_x = mouse_click_event->mouse_x - board_x;
     int board_relative_y = mouse_click_event->mouse_y - board_y;
-    if (board_relative_x < 0 || board_relative_x >= board_side_length || board_relative_y < 0 || board_relative_y >= board_side_length) {
+    if (mouse_click_event->button == SDL_BUTTON_LEFT && (board_relative_x < 0 || board_relative_x >= board_side_length || board_relative_y < 0 || board_relative_y >= board_side_length)) {
         return;
     }
 
@@ -101,7 +104,11 @@ void Game::process_input(int window_width, int window_height, MouseClickEvent* m
             if (clicked_piece != nullptr && clicked_piece->get_color() == PieceColor::WHITE) {
                 selected_piece = clicked_piece;
                 selected_piece->get_possible_moves(board_horizontal_squares, board_vertical_squares, active_pieces, possible_moves_for_selected_piece);
-                state = GameState::WHITE_SELECTING_DESTINATION;
+                if (possible_moves_for_selected_piece.empty()) {
+                    reset_piece_selection();
+                } else {
+                    state = GameState::WHITE_SELECTING_DESTINATION;
+                }
             }
             break;
 
@@ -194,9 +201,15 @@ void Game::render(SDL_Renderer* renderer) {
 
     switch (state) {
         case GameState::WHITE_SELECTING_DESTINATION:
-            break;
-
         case GameState::BLACK_SELECTING_DESTINATION:
+            render_board_square_selection(renderer, selected_piece->get_location(), selected_color);
+            for (Move move : possible_moves_for_selected_piece) {
+                if (move.type == MoveType::CAPTURE) {
+                    render_board_square_selection(renderer, move.destination, capture_color);
+                } else {
+                    render_board_square_selection(renderer, move.destination, move_color);
+                }
+            }
             break;
 
         default:
@@ -221,7 +234,7 @@ void Game::recalculate_board_dimensions(int window_width, int window_height) {
 
 void Game::render_piece(SDL_Renderer* renderer, Piece* piece) {
     float texture_piece_width = static_cast<float>(pieces_texture->w) / 6;
-    float texture_piece_height = static_cast<float>(pieces_texture->h);
+    float texture_piece_height = static_cast<float>(pieces_texture->h) / 2;
 
     SDL_FRect piece_texture_rect = {
         piece->get_piece_texture_index() * texture_piece_width,
@@ -247,4 +260,31 @@ void Game::render_piece(SDL_Renderer* renderer, Piece* piece) {
 void Game::reset_piece_selection() {
     selected_piece = nullptr;
     possible_moves_for_selected_piece.clear();
+}
+
+// --------------------------------------------------------------------------
+
+void Game::render_board_square_selection(SDL_Renderer* renderer, const BoardLocation& location, const SDL_Color& color) {
+    float texture_sprite_width = static_cast<float>(pieces_texture->w) / 6;
+    float texture_sprite_height = static_cast<float>(pieces_texture->h) / 2;
+
+    const int selection_texture_x_index = 0;
+    const int selection_texture_y_index = 1;
+
+    SDL_FRect selection_texture_rect = {
+        selection_texture_x_index * texture_sprite_width,
+        selection_texture_y_index * texture_sprite_height,
+        texture_sprite_width,
+        texture_sprite_height
+    };
+
+    SDL_FRect selection_rect = {
+        board_x + location.x * board_square_width,
+        board_y + (board_vertical_squares - 1 - location.y) * board_square_height,
+        board_square_width,
+        board_square_height
+    };
+
+    SDL_SetTextureColorMod(pieces_texture, color.r, color.g, color.b);
+    SDL_RenderTexture(renderer, pieces_texture, &selection_texture_rect, &selection_rect);
 }

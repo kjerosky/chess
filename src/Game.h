@@ -35,6 +35,9 @@ private:
     SDL_Color dark_square_color;
     SDL_Color white_piece_color;
     SDL_Color black_piece_color;
+    SDL_Color selected_color;
+    SDL_Color move_color;
+    SDL_Color capture_color;
 
     std::vector<Piece*> active_pieces;
 
@@ -52,6 +55,7 @@ private:
     void recalculate_board_dimensions(int window_width, int window_height);
     void render_piece(SDL_Renderer* renderer, Piece* piece);
     void reset_piece_selection();
+    void render_board_square_selection(SDL_Renderer* renderer, const BoardLocation& location, const SDL_Color& color);
 };
 
 #endif
