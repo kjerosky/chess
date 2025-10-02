@@ -22,6 +22,7 @@ public:
 
     virtual void get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, std::vector<Move>& possible_moves) = 0;
     virtual bool is_capturable() const = 0;
+    virtual int get_piece_texture_index() const = 0;
 
     BoardLocation get_location() const;
     PieceColor get_color() const;

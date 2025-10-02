@@ -31,3 +31,9 @@ bool Bishop::is_capturable() const {
     return true;
 }
 
+// --------------------------------------------------------------------------
+
+int Bishop::get_piece_texture_index() const {
+    return 2;
+}
+

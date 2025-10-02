@@ -24,6 +24,11 @@ private:
     int board_height;
     SDL_Texture* pieces_texture;
 
+    SDL_Color light_square_color;
+    SDL_Color dark_square_color;
+    SDL_Color white_piece_color;
+    SDL_Color black_piece_color;
+
     std::vector<Piece*> pieces;
 
     int window_width;

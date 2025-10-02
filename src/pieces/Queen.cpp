@@ -37,3 +37,9 @@ bool Queen::is_capturable() const {
     return true;
 }
 
+// --------------------------------------------------------------------------
+
+int Queen::get_piece_texture_index() const {
+    return 1;
+}
+

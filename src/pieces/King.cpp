@@ -38,3 +38,9 @@ void King::get_possible_moves(int board_width, int board_height, const std::vect
 bool King::is_capturable() const {
     return false;
 }
+
+// --------------------------------------------------------------------------
+
+int King::get_piece_texture_index() const {
+    return 0;
+}

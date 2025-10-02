@@ -38,3 +38,9 @@ void Knight::get_possible_moves(int board_width, int board_height, const std::ve
 bool Knight::is_capturable() const {
     return true;
 }
+
+// --------------------------------------------------------------------------
+
+int Knight::get_piece_texture_index() const {
+    return 3;
+}

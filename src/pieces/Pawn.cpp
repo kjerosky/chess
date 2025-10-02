@@ -52,3 +52,9 @@ void Pawn::get_possible_moves(int board_width, int board_height, const std::vect
 bool Pawn::is_capturable() const {
     return true;
 }
+
+// --------------------------------------------------------------------------
+
+int Pawn::get_piece_texture_index() const {
+    return 5;
+}
