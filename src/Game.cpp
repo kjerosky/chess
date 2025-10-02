@@ -101,69 +101,19 @@ void Game::process_input(int window_width, int window_height, MouseClickEvent* m
 
     switch (state) {
         case GameState::WHITE_SELECTING_PIECE:
-            if (clicked_piece != nullptr && clicked_piece->get_color() == PieceColor::WHITE) {
-                selected_piece = clicked_piece;
-                selected_piece->get_possible_moves(board_horizontal_squares, board_vertical_squares, active_pieces, possible_moves_for_selected_piece);
-                if (possible_moves_for_selected_piece.empty()) {
-                    reset_piece_selection();
-                } else {
-                    state = GameState::WHITE_SELECTING_DESTINATION;
-                }
-            }
+            handle_piece_selection(clicked_piece, PieceColor::WHITE, GameState::WHITE_SELECTING_DESTINATION);
             break;
 
         case GameState::BLACK_SELECTING_PIECE:
-            if (clicked_piece != nullptr && clicked_piece->get_color() == PieceColor::BLACK) {
-                selected_piece = clicked_piece;
-                selected_piece->get_possible_moves(board_horizontal_squares, board_vertical_squares, active_pieces, possible_moves_for_selected_piece);
-                state = GameState::BLACK_SELECTING_DESTINATION;
-            }
+            handle_piece_selection(clicked_piece, PieceColor::BLACK, GameState::BLACK_SELECTING_DESTINATION);
             break;
 
         case GameState::WHITE_SELECTING_DESTINATION:
-            if (mouse_click_event->button == SDL_BUTTON_RIGHT) {
-                reset_piece_selection();
-                state = GameState::WHITE_SELECTING_PIECE;
-            } else {
-                // Move selected piece to destination and capture if applicable
-                for (Move move : possible_moves_for_selected_piece) {
-                    if (move.destination == click_location) {
-                        if (move.type == MoveType::CAPTURE) {
-                            Piece* piece_to_capture = get_piece_at_destination(move.destination, active_pieces);
-                            active_pieces.erase(std::remove(active_pieces.begin(), active_pieces.end(), piece_to_capture), active_pieces.end());
-                        }
-
-                        selected_piece->move_to(move.destination);
-
-                        reset_piece_selection();
-                        state = GameState::BLACK_SELECTING_PIECE;
-                        break;
-                    }
-                }
-            }
+            handle_piece_destination_selection(click_location, mouse_click_event->button == SDL_BUTTON_RIGHT, GameState::BLACK_SELECTING_PIECE, GameState::WHITE_SELECTING_PIECE);
             break;
 
         case GameState::BLACK_SELECTING_DESTINATION:
-            if (mouse_click_event->button == SDL_BUTTON_RIGHT) {
-                reset_piece_selection();
-                state = GameState::BLACK_SELECTING_PIECE;
-            } else {
-                // Move selected piece to destination and capture if applicable
-                for (Move move : possible_moves_for_selected_piece) {
-                    if (move.destination == click_location) {
-                        if (move.type == MoveType::CAPTURE) {
-                            Piece* piece_to_capture = get_piece_at_destination(move.destination, active_pieces);
-                            active_pieces.erase(std::remove(active_pieces.begin(), active_pieces.end(), piece_to_capture), active_pieces.end());
-                        }
-
-                        selected_piece->move_to(move.destination);
-
-                        reset_piece_selection();
-                        state = GameState::WHITE_SELECTING_PIECE;
-                        break;
-                    }
-                }
-            }
+            handle_piece_destination_selection(click_location, mouse_click_event->button == SDL_BUTTON_RIGHT, GameState::WHITE_SELECTING_PIECE, GameState::BLACK_SELECTING_PIECE);
             break;
     }
 }
@@ -171,6 +121,9 @@ void Game::process_input(int window_width, int window_height, MouseClickEvent* m
 // --------------------------------------------------------------------------
 
 void Game::render(SDL_Renderer* renderer) {
+    SDL_Color original_texture_color_mod;
+    SDL_GetTextureColorMod(pieces_texture, &original_texture_color_mod.r, &original_texture_color_mod.g, &original_texture_color_mod.b);
+
     // Render the board
     for (int i = 0; i < board_horizontal_squares; ++i) {
         for (int j = 0; j < board_vertical_squares; ++j) {
@@ -188,26 +141,22 @@ void Game::render(SDL_Renderer* renderer) {
     }
 
     // Render the pieces
-    SDL_Color original_color_mod;
-    SDL_GetTextureColorMod(pieces_texture, &original_color_mod.r, &original_color_mod.g, &original_color_mod.b);
-
     float texture_piece_width = static_cast<float>(pieces_texture->w) / 6;
     float texture_piece_height = static_cast<float>(pieces_texture->h);
     for (Piece* piece : active_pieces) {
-        render_piece(renderer, piece);
+        SDL_Color& piece_color = piece->get_color() == PieceColor::WHITE ? white_piece_color : black_piece_color;
+        render_sprite_on_board(renderer, piece->get_location(), piece->get_piece_texture_index(), 0, piece_color);
     }
-
-    SDL_SetTextureColorMod(pieces_texture, original_color_mod.r, original_color_mod.g, original_color_mod.b);
 
     switch (state) {
         case GameState::WHITE_SELECTING_DESTINATION:
         case GameState::BLACK_SELECTING_DESTINATION:
-            render_board_square_selection(renderer, selected_piece->get_location(), selected_color);
+            render_sprite_on_board(renderer, selected_piece->get_location(), 0, 1, selected_color);
             for (Move move : possible_moves_for_selected_piece) {
                 if (move.type == MoveType::CAPTURE) {
-                    render_board_square_selection(renderer, move.destination, capture_color);
+                    render_sprite_on_board(renderer, move.destination, 0, 1, capture_color);
                 } else {
-                    render_board_square_selection(renderer, move.destination, move_color);
+                    render_sprite_on_board(renderer, move.destination, 0, 1, move_color);
                 }
             }
             break;
@@ -216,6 +165,8 @@ void Game::render(SDL_Renderer* renderer) {
             // do nothing for now
             break;
     }
+
+    SDL_SetTextureColorMod(pieces_texture, original_texture_color_mod.r, original_texture_color_mod.g, original_texture_color_mod.b);
 }
 
 // --------------------------------------------------------------------------
@@ -232,31 +183,6 @@ void Game::recalculate_board_dimensions(int window_width, int window_height) {
 
 // --------------------------------------------------------------------------
 
-void Game::render_piece(SDL_Renderer* renderer, Piece* piece) {
-    float texture_piece_width = static_cast<float>(pieces_texture->w) / 6;
-    float texture_piece_height = static_cast<float>(pieces_texture->h) / 2;
-
-    SDL_FRect piece_texture_rect = {
-        piece->get_piece_texture_index() * texture_piece_width,
-        0,
-        texture_piece_width,
-        texture_piece_height
-    };
-
-    SDL_FRect piece_rect = {
-        board_x + piece->get_location().x * board_square_width,
-        board_y + (board_vertical_squares - 1 - piece->get_location().y) * board_square_height,
-        board_square_width,
-        board_square_height
-    };
-
-    SDL_Color& piece_color = piece->get_color() == PieceColor::WHITE ? white_piece_color : black_piece_color;
-    SDL_SetTextureColorMod(pieces_texture, piece_color.r, piece_color.g, piece_color.b);
-    SDL_RenderTexture(renderer, pieces_texture, &piece_texture_rect, &piece_rect);
-}
-
-// --------------------------------------------------------------------------
-
 void Game::reset_piece_selection() {
     selected_piece = nullptr;
     possible_moves_for_selected_piece.clear();
@@ -264,21 +190,57 @@ void Game::reset_piece_selection() {
 
 // --------------------------------------------------------------------------
 
-void Game::render_board_square_selection(SDL_Renderer* renderer, const BoardLocation& location, const SDL_Color& color) {
+void Game::handle_piece_selection(Piece* clicked_piece, PieceColor piece_color, GameState next_state_on_successful_selection) {
+    if (clicked_piece != nullptr && clicked_piece->get_color() == piece_color) {
+        selected_piece = clicked_piece;
+        selected_piece->get_possible_moves(board_horizontal_squares, board_vertical_squares, active_pieces, possible_moves_for_selected_piece);
+        if (possible_moves_for_selected_piece.empty()) {
+            reset_piece_selection();
+        } else {
+            state = next_state_on_successful_selection;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+
+void Game::handle_piece_destination_selection(const BoardLocation& click_location, bool is_cancel_requested, GameState next_state_on_move, GameState next_state_on_cancel) {
+    if (is_cancel_requested) {
+        reset_piece_selection();
+        state = next_state_on_cancel;
+    } else {
+        // Move selected piece to destination and capture if applicable
+        for (Move move : possible_moves_for_selected_piece) {
+            if (move.destination == click_location) {
+                if (move.type == MoveType::CAPTURE) {
+                    Piece* piece_to_capture = get_piece_at_destination(move.destination, active_pieces);
+                    active_pieces.erase(std::remove(active_pieces.begin(), active_pieces.end(), piece_to_capture), active_pieces.end());
+                }
+
+                selected_piece->move_to(move.destination);
+
+                reset_piece_selection();
+                state = next_state_on_move;
+                break;
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+
+void Game::render_sprite_on_board(SDL_Renderer* renderer, const BoardLocation& location, int sprite_x, int sprite_y, const SDL_Color& color) {
     float texture_sprite_width = static_cast<float>(pieces_texture->w) / 6;
     float texture_sprite_height = static_cast<float>(pieces_texture->h) / 2;
 
-    const int selection_texture_x_index = 0;
-    const int selection_texture_y_index = 1;
-
-    SDL_FRect selection_texture_rect = {
-        selection_texture_x_index * texture_sprite_width,
-        selection_texture_y_index * texture_sprite_height,
+    SDL_FRect sprite_texture_rect = {
+        sprite_x * texture_sprite_width,
+        sprite_y * texture_sprite_height,
         texture_sprite_width,
         texture_sprite_height
     };
 
-    SDL_FRect selection_rect = {
+    SDL_FRect sprite_rect = {
         board_x + location.x * board_square_width,
         board_y + (board_vertical_squares - 1 - location.y) * board_square_height,
         board_square_width,
@@ -286,5 +248,5 @@ void Game::render_board_square_selection(SDL_Renderer* renderer, const BoardLoca
     };
 
     SDL_SetTextureColorMod(pieces_texture, color.r, color.g, color.b);
-    SDL_RenderTexture(renderer, pieces_texture, &selection_texture_rect, &selection_rect);
+    SDL_RenderTexture(renderer, pieces_texture, &sprite_texture_rect, &sprite_rect);
 }

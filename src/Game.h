@@ -53,9 +53,10 @@ private:
     std::vector<Move> possible_moves_for_selected_piece;
 
     void recalculate_board_dimensions(int window_width, int window_height);
-    void render_piece(SDL_Renderer* renderer, Piece* piece);
+    void render_sprite_on_board(SDL_Renderer* renderer, const BoardLocation& location, int sprite_x, int sprite_y, const SDL_Color& color);
     void reset_piece_selection();
-    void render_board_square_selection(SDL_Renderer* renderer, const BoardLocation& location, const SDL_Color& color);
+    void handle_piece_selection(Piece* clicked_piece, PieceColor piece_color, GameState next_state_on_successful_selection);
+    void handle_piece_destination_selection(const BoardLocation& click_location, bool is_cancel_requested, GameState next_state_on_move, GameState next_state_on_cancel);
 };
 
 #endif
