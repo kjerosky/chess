@@ -11,7 +11,7 @@ class Game {
 
 public:
 
-    Game(int board_width, int board_height, SDL_Texture* pieces_texture);
+    Game(int board_horizontal_squares, int board_vertical_squares, SDL_Texture* pieces_texture);
     ~Game();
 
     void reset();
@@ -20,8 +20,8 @@ public:
 
 private:
 
-    int board_width;
-    int board_height;
+    int board_horizontal_squares;
+    int board_vertical_squares;
     SDL_Texture* pieces_texture;
 
     SDL_Color light_square_color;
@@ -31,8 +31,12 @@ private:
 
     std::vector<Piece*> pieces;
 
-    int window_width;
-    int window_height;
+    int board_x;
+    int board_y;
+    float board_square_width;
+    float board_square_height;
+
+    void recalculate_board_dimensions(int window_width, int window_height);
 };
 
 #endif
