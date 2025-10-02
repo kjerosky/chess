@@ -7,10 +7,11 @@
 #include "pieces/Queen.h"
 #include "pieces/King.h"
 
-Game::Game(int board_width, int board_height)
+Game::Game(int board_width, int board_height, SDL_Texture* pieces_texture)
 :
 board_width(board_width),
-board_height(board_height) {
+board_height(board_height),
+pieces_texture(pieces_texture) {
     reset();
 }
 
@@ -57,4 +58,23 @@ void Game::reset() {
 
     pieces.push_back(new King(PieceColor::WHITE, { 4, 0 }));
     pieces.push_back(new King(PieceColor::BLACK, { 4, board_height - 1 }));
+}
+
+// --------------------------------------------------------------------------
+
+void Game::process_input(int window_width, int window_height, MouseClickEvent* mouse_click_event) {
+    this->window_width = window_width;
+    this->window_height = window_height;
+
+    if (mouse_click_event == nullptr) {
+        return;
+    }
+
+    //todo
+}
+
+// --------------------------------------------------------------------------
+
+void Game::render(SDL_Renderer* renderer) {
+    // todo
 }

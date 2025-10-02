@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set output directory for executables
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Add include directories
 include_directories(/opt/homebrew/include)
@@ -21,8 +21,11 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c")
 # Create executable
 add_executable(chess ${SOURCES})
 
-# Link SDL3 library
-target_link_libraries(chess SDL3)
+# Copy assets to build directory
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
+
+# Link SDL3 libraries
+target_link_libraries(chess SDL3 SDL3_image)
 
 # Set rpath for macOS to find libraries at runtime
 if(APPLE)
