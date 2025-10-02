@@ -18,7 +18,7 @@ light_square_color({ 255, 206, 158, 255 }),
 dark_square_color({ 209, 139, 71, 255 }),
 white_piece_color({ 255, 255, 255, 255 }),
 black_piece_color({ 0, 0, 0, 255 }),
-selected_color({ 0, 0, 255, 255 }),
+selected_color({ 255, 215, 0, 255 }),
 move_color({ 0, 255, 0, 255 }),
 capture_color({ 255, 0, 0, 255 }) {
     reset();
@@ -140,30 +140,24 @@ void Game::render(SDL_Renderer* renderer) {
         }
     }
 
+    // Render possible move indicators (underneath the pieces)
+    if (selected_piece != nullptr) {
+        render_sprite_on_board(renderer, selected_piece->get_location(), 0, 1, selected_color);
+        for (Move move : possible_moves_for_selected_piece) {
+            if (move.type == MoveType::CAPTURE) {
+                render_sprite_on_board(renderer, move.destination, 0, 1, capture_color);
+            } else {
+                render_sprite_on_board(renderer, move.destination, 0, 1, move_color);
+            }
+        }
+    }
+
     // Render the pieces
     float texture_piece_width = static_cast<float>(pieces_texture->w) / 6;
     float texture_piece_height = static_cast<float>(pieces_texture->h);
     for (Piece* piece : active_pieces) {
         SDL_Color& piece_color = piece->get_color() == PieceColor::WHITE ? white_piece_color : black_piece_color;
         render_sprite_on_board(renderer, piece->get_location(), piece->get_piece_texture_index(), 0, piece_color);
-    }
-
-    switch (state) {
-        case GameState::WHITE_SELECTING_DESTINATION:
-        case GameState::BLACK_SELECTING_DESTINATION:
-            render_sprite_on_board(renderer, selected_piece->get_location(), 0, 1, selected_color);
-            for (Move move : possible_moves_for_selected_piece) {
-                if (move.type == MoveType::CAPTURE) {
-                    render_sprite_on_board(renderer, move.destination, 0, 1, capture_color);
-                } else {
-                    render_sprite_on_board(renderer, move.destination, 0, 1, move_color);
-                }
-            }
-            break;
-
-        default:
-            // do nothing for now
-            break;
     }
 
     SDL_SetTextureColorMod(pieces_texture, original_texture_color_mod.r, original_texture_color_mod.g, original_texture_color_mod.b);
