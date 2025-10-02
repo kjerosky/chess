@@ -20,6 +20,13 @@ public:
 
 private:
 
+    enum class GameState {
+        WHITE_SELECTING_PIECE,
+        BLACK_SELECTING_PIECE,
+        WHITE_SELECTING_DESTINATION,
+        BLACK_SELECTING_DESTINATION
+    };
+
     int board_horizontal_squares;
     int board_vertical_squares;
     SDL_Texture* pieces_texture;
@@ -29,14 +36,22 @@ private:
     SDL_Color white_piece_color;
     SDL_Color black_piece_color;
 
-    std::vector<Piece*> pieces;
+    std::vector<Piece*> active_pieces;
 
     int board_x;
     int board_y;
     float board_square_width;
     float board_square_height;
+    float board_side_length;
+
+    GameState state;
+
+    Piece* selected_piece;
+    std::vector<Move> possible_moves_for_selected_piece;
 
     void recalculate_board_dimensions(int window_width, int window_height);
+    void render_piece(SDL_Renderer* renderer, Piece* piece);
+    void reset_piece_selection();
 };
 
 #endif

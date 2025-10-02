@@ -63,3 +63,9 @@ void Piece::process_possible_destinations(int board_width, int board_height, con
         }
     }
 }
+
+// --------------------------------------------------------------------------
+
+void Piece::move_to(const BoardLocation& destination) {
+    location = destination;
+}

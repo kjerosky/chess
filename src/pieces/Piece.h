@@ -26,6 +26,7 @@ public:
 
     BoardLocation get_location() const;
     PieceColor get_color() const;
+    void move_to(const BoardLocation& destination);
 
 protected:
 
