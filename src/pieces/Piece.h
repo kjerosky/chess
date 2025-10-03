@@ -35,6 +35,7 @@ protected:
     
     void add_directional_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, int dx, int dy, std::vector<Move>& possible_moves);
     void process_possible_destinations(int board_width, int board_height, const std::vector<Piece*>& active_pieces, const std::vector<BoardLocation>& destinations, std::vector<Move>& possible_moves);
+    Move create_move_for_destination(const BoardLocation& destination, int board_width, int board_height, const std::vector<Piece*>& active_pieces);
 };
 
 #endif

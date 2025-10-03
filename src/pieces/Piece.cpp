@@ -53,13 +53,9 @@ void Piece::add_directional_moves(int board_width, int board_height, const std::
 
 void Piece::process_possible_destinations(int board_width, int board_height, const std::vector<Piece*>& active_pieces, const std::vector<BoardLocation>& destinations, std::vector<Move>& possible_moves) {
     for (const BoardLocation& destination : destinations) {
-        if (destination.x >= 0 && destination.x < board_width && destination.y >= 0 && destination.y < board_height) {
-            Piece* piece_at_destination = get_piece_at_destination(destination, active_pieces);
-            MoveType move_type = determine_move_type(this, piece_at_destination);
-
-            if (move_type != MoveType::INVALID) {
-                possible_moves.push_back({move_type, destination});
-            }
+        Move move = create_move_for_destination(destination, board_width, board_height, active_pieces);
+        if (move.type != MoveType::INVALID) {
+            possible_moves.push_back(move);
         }
     }
 }
@@ -68,4 +64,18 @@ void Piece::process_possible_destinations(int board_width, int board_height, con
 
 void Piece::move_to(const BoardLocation& destination) {
     location = destination;
+}
+
+// --------------------------------------------------------------------------
+
+Move Piece::create_move_for_destination(const BoardLocation& destination, int board_width, int board_height, const std::vector<Piece*>& active_pieces) {
+    Move move = {MoveType::INVALID, destination};
+
+    if (destination.x >= 0 && destination.x < board_width && destination.y >= 0 && destination.y < board_height) {
+        Piece* piece_at_destination = get_piece_at_destination(destination, active_pieces);
+        MoveType move_type = determine_move_type(this, piece_at_destination);
+        move.type = move_type;
+    }
+
+    return move;
 }

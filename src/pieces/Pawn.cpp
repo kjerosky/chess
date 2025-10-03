@@ -25,26 +25,42 @@ void Pawn::get_possible_moves(int board_width, int board_height, const std::vect
     // Check if this is the pawn's starting position (for two-square move)
     bool is_starting_position = (color == PieceColor::WHITE && location.y == 1) || (color == PieceColor::BLACK && location.y == 6);
     
-    // Build destinations vector
-    std::vector<BoardLocation> destinations;
-    
-    // One square forward
+    // Check moving one square forward
     int one_square_ahead_y = location.y + move_direction;
     if (one_square_ahead_y >= 0 && one_square_ahead_y < board_height) {
-        destinations.push_back({location.x, one_square_ahead_y});
-        
-        // Two squares forward on first move
-        if (is_starting_position) {
-            int two_squares_ahead_y = location.y + (2 * move_direction);
-            if (two_squares_ahead_y >= 0 && two_squares_ahead_y < board_height) {
-                destinations.push_back({location.x, two_squares_ahead_y});
+        Move one_square_ahead_move = create_move_for_destination({location.x, one_square_ahead_y}, board_width, board_height, active_pieces);
+        if (one_square_ahead_move.type == MoveType::MOVE) {
+            possible_moves.push_back(one_square_ahead_move);
+
+            // Check moving two squares forward on first move
+            if (is_starting_position) {
+                int two_squares_ahead_y = location.y + (2 * move_direction);
+                if (two_squares_ahead_y >= 0 && two_squares_ahead_y < board_height) {
+                    Move two_squares_ahead_move = create_move_for_destination({location.x, two_squares_ahead_y}, board_width, board_height, active_pieces);
+                    if (two_squares_ahead_move.type == MoveType::MOVE) {
+                        possible_moves.push_back(two_squares_ahead_move);
+                    }
+                }
             }
         }
     }
 
+    // Check for captures
+    if (location.x > 0) {
+        Move capture_move_left = create_move_for_destination({location.x - 1, one_square_ahead_y}, board_width, board_height, active_pieces);
+        if (capture_move_left.type == MoveType::CAPTURE) {
+            possible_moves.push_back(capture_move_left);
+        }
+    }
+
+    if (location.x < board_width - 1) {
+        Move capture_move_right = create_move_for_destination({location.x + 1, one_square_ahead_y}, board_width, board_height, active_pieces);
+        if (capture_move_right.type == MoveType::CAPTURE) {
+            possible_moves.push_back(capture_move_right);
+        }
+    }
+
     //TODO need to handle en passant
-    
-    process_possible_destinations(board_width, board_height, active_pieces, destinations, possible_moves);
 }
 
 // --------------------------------------------------------------------------
