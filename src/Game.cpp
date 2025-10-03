@@ -209,6 +209,7 @@ void Game::handle_piece_destination_selection(const BoardLocation& click_locatio
                 if (move.type == MoveType::CAPTURE) {
                     Piece* piece_to_capture = get_piece_at_destination(move.destination, active_pieces);
                     active_pieces.erase(std::remove(active_pieces.begin(), active_pieces.end(), piece_to_capture), active_pieces.end());
+                    delete piece_to_capture;
                 }
 
                 selected_piece->move_to(move.destination);
