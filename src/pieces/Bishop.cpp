@@ -27,12 +27,6 @@ void Bishop::get_possible_moves(int board_width, int board_height, const std::ve
 
 // --------------------------------------------------------------------------
 
-bool Bishop::is_capturable() const {
-    return true;
-}
-
-// --------------------------------------------------------------------------
-
 int Bishop::get_piece_texture_index() const {
     return 2;
 }

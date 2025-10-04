@@ -20,10 +20,8 @@ MoveType determine_move_type(const Piece* piece_to_move, Piece* piece_at_destina
 
     if (piece_at_destination == nullptr) {
         move_type = MoveType::MOVE;
-    } else if (piece_to_move->get_color() != piece_at_destination->get_color()) {
-        if (piece_at_destination->is_capturable()) {
-            move_type = MoveType::CAPTURE;
-        }
+    } else if (piece_to_move->get_color() != piece_at_destination->get_color() && piece_at_destination->get_type() != PieceType::KING) {
+        move_type = MoveType::CAPTURE;
     }
 
     return move_type;

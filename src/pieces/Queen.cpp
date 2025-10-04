@@ -33,12 +33,6 @@ void Queen::get_possible_moves(int board_width, int board_height, const std::vec
 
 // --------------------------------------------------------------------------
 
-bool Queen::is_capturable() const {
-    return true;
-}
-
-// --------------------------------------------------------------------------
-
 int Queen::get_piece_texture_index() const {
     return 1;
 }

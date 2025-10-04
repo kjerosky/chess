@@ -27,12 +27,6 @@ void Rook::get_possible_moves(int board_width, int board_height, const std::vect
 
 // --------------------------------------------------------------------------
 
-bool Rook::is_capturable() const {
-    return true;
-}
-
-// --------------------------------------------------------------------------
-
 int Rook::get_piece_texture_index() const {
     return 4;
 }
