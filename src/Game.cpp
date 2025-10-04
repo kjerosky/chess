@@ -72,6 +72,8 @@ void Game::reset() {
 
     selected_piece = nullptr;
     possible_moves_for_selected_piece.clear();
+
+    en_passant_capturable_piece = nullptr;
 }
 
 // --------------------------------------------------------------------------
@@ -187,7 +189,7 @@ void Game::reset_piece_selection() {
 void Game::handle_piece_selection(Piece* clicked_piece, PieceColor piece_color, GameState next_state_on_successful_selection) {
     if (clicked_piece != nullptr && clicked_piece->get_color() == piece_color) {
         selected_piece = clicked_piece;
-        selected_piece->get_possible_moves(board_horizontal_squares, board_vertical_squares, active_pieces, possible_moves_for_selected_piece);
+        selected_piece->get_possible_moves(board_horizontal_squares, board_vertical_squares, active_pieces, en_passant_capturable_piece, possible_moves_for_selected_piece);
         if (possible_moves_for_selected_piece.empty()) {
             reset_piece_selection();
         } else {
@@ -206,6 +208,8 @@ void Game::handle_piece_destination_selection(const BoardLocation& click_locatio
         // Move selected piece to destination and capture if applicable
         for (Move move : possible_moves_for_selected_piece) {
             if (move.destination == click_location) {
+                en_passant_capturable_piece = move.is_en_passant_capturable ? selected_piece : nullptr;
+
                 if (move.piece_to_capture != nullptr) {
                     Piece* piece_to_capture = move.piece_to_capture;
                     active_pieces.erase(std::remove(active_pieces.begin(), active_pieces.end(), piece_to_capture), active_pieces.end());

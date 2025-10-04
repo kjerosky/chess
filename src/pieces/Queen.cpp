@@ -12,7 +12,7 @@ Queen::~Queen() = default;
 
 // --------------------------------------------------------------------------
 
-void Queen::get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, std::vector<Move>& possible_moves) {
+void Queen::get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, Piece* en_passant_capturable_piece, std::vector<Move>& possible_moves) {
     // Queen moves like a rook + bishop combined
     
     // Clear any existing moves

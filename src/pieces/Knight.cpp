@@ -12,7 +12,7 @@ Knight::~Knight() = default;
 
 // --------------------------------------------------------------------------
 
-void Knight::get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, std::vector<Move>& possible_moves) {
+void Knight::get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, Piece* en_passant_capturable_piece, std::vector<Move>& possible_moves) {
     // Knight moves in L-shapes (2 squares in one direction, then 1 square perpendicular)
     
     // Clear any existing moves

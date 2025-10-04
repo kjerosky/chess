@@ -12,7 +12,6 @@ enum class MoveType {
     MOVE,
     CAPTURE,
     PROMOTION,
-    EN_PASSANT,
     CASTLING
 };
 
@@ -20,6 +19,7 @@ struct Move {
     MoveType type;
     BoardLocation destination;
     Piece* piece_to_capture;
+    bool is_en_passant_capturable;
 };
 
 Piece* get_piece_at_destination(const BoardLocation& destination, const std::vector<Piece*>& active_pieces);

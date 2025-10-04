@@ -12,7 +12,7 @@ Rook::~Rook() = default;
 
 // --------------------------------------------------------------------------
 
-void Rook::get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, std::vector<Move>& possible_moves) {
+void Rook::get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, Piece* en_passant_capturable_piece, std::vector<Move>& possible_moves) {
     // Rook moves horizontally and vertically
     
     // Clear any existing moves

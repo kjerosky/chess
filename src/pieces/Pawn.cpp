@@ -12,7 +12,7 @@ Pawn::~Pawn() = default;
 
 // --------------------------------------------------------------------------
 
-void Pawn::get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, std::vector<Move>& possible_moves) {
+void Pawn::get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, Piece* en_passant_capturable_piece, std::vector<Move>& possible_moves) {
     // Pawn moves forward one square, or two squares on first move
     // For now, we'll implement basic forward movement without considering captures or other pieces
     
@@ -38,6 +38,7 @@ void Pawn::get_possible_moves(int board_width, int board_height, const std::vect
                 if (two_squares_ahead_y >= 0 && two_squares_ahead_y < board_height) {
                     Move two_squares_ahead_move = create_move_for_destination({location.x, two_squares_ahead_y}, board_width, board_height, active_pieces);
                     if (two_squares_ahead_move.type == MoveType::MOVE) {
+                        two_squares_ahead_move.is_en_passant_capturable = true;
                         possible_moves.push_back(two_squares_ahead_move);
                     }
                 }
@@ -60,7 +61,24 @@ void Pawn::get_possible_moves(int board_width, int board_height, const std::vect
         }
     }
 
-    //TODO need to handle en passant
+    if (en_passant_capturable_piece != nullptr) {
+        std::vector<BoardLocation> locations_to_check = {
+            {location.x - 1, location.y},
+            {location.x + 1, location.y}
+        };
+        for (const BoardLocation& location_to_check : locations_to_check) {
+            if (en_passant_capturable_piece->get_location() == location_to_check) {
+                Move en_passant_move = {
+                    MoveType::CAPTURE,
+                    { location_to_check.x, one_square_ahead_y },
+                    en_passant_capturable_piece,
+                    false
+                };
+                possible_moves.push_back(en_passant_move);
+                break;
+            }
+        }
+    }
 }
 
 // --------------------------------------------------------------------------

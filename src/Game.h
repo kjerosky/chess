@@ -51,6 +51,7 @@ private:
 
     Piece* selected_piece;
     std::vector<Move> possible_moves_for_selected_piece;
+    Piece* en_passant_capturable_piece;
 
     void recalculate_board_dimensions(int window_width, int window_height);
     void render_sprite_on_board(SDL_Renderer* renderer, const BoardLocation& location, int sprite_x, int sprite_y, const SDL_Color& color);
