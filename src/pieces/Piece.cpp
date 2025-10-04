@@ -38,7 +38,12 @@ void Piece::add_directional_moves(int board_width, int board_height, const std::
             break;
         }
 
-        possible_moves.push_back({move_type, {x, y}});
+        Move move = {
+            move_type,
+            {x, y},
+            move_type == MoveType::CAPTURE ? piece_at_destination : nullptr
+        };
+        possible_moves.push_back(move);
 
         if (move_type == MoveType::CAPTURE) {
             break;
@@ -69,12 +74,16 @@ void Piece::move_to(const BoardLocation& destination) {
 // --------------------------------------------------------------------------
 
 Move Piece::create_move_for_destination(const BoardLocation& destination, int board_width, int board_height, const std::vector<Piece*>& active_pieces) {
-    Move move = {MoveType::INVALID, destination};
+    Move move = {MoveType::INVALID, destination, nullptr};
 
     if (destination.x >= 0 && destination.x < board_width && destination.y >= 0 && destination.y < board_height) {
         Piece* piece_at_destination = get_piece_at_destination(destination, active_pieces);
         MoveType move_type = determine_move_type(this, piece_at_destination);
         move.type = move_type;
+
+        if (move_type == MoveType::CAPTURE) {
+            move.piece_to_capture = piece_at_destination;
+        }
     }
 
     return move;

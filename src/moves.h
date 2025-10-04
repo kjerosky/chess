@@ -19,6 +19,7 @@ enum class MoveType {
 struct Move {
     MoveType type;
     BoardLocation destination;
+    Piece* piece_to_capture;
 };
 
 Piece* get_piece_at_destination(const BoardLocation& destination, const std::vector<Piece*>& active_pieces);
