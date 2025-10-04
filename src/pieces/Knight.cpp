@@ -2,7 +2,7 @@
 
 Knight::Knight(PieceColor color, BoardLocation location)
 :
-Piece(color, location) {
+Piece(PieceType::KNIGHT, color, location) {
     // do nothing for now
 }
 

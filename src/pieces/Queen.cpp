@@ -2,7 +2,7 @@
 
 Queen::Queen(PieceColor color, BoardLocation location)
 :
-Piece(color, location) {
+Piece(PieceType::QUEEN, color, location) {
     // do nothing for now
 }
 

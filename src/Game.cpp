@@ -210,6 +210,11 @@ void Game::handle_piece_destination_selection(const BoardLocation& click_locatio
             if (move.destination == click_location) {
                 en_passant_capturable_piece = move.is_en_passant_capturable ? selected_piece : nullptr;
 
+                if (move.castling_rook != nullptr) {
+                    move.castling_rook->move_to(move.castling_rook_destination);
+                    move.castling_rook->mark_as_moved();
+                }
+
                 if (move.piece_to_capture != nullptr) {
                     Piece* piece_to_capture = move.piece_to_capture;
                     active_pieces.erase(std::remove(active_pieces.begin(), active_pieces.end(), piece_to_capture), active_pieces.end());
@@ -217,6 +222,7 @@ void Game::handle_piece_destination_selection(const BoardLocation& click_locatio
                 }
 
                 selected_piece->move_to(move.destination);
+                selected_piece->mark_as_moved();
 
                 reset_piece_selection();
                 state = next_state_on_move;

@@ -2,7 +2,7 @@
 
 Pawn::Pawn(PieceColor c, BoardLocation location)
 :
-Piece(c, location) {
+Piece(PieceType::PAWN, c, location) {
     // do nothing for now
 }
 
@@ -68,12 +68,14 @@ void Pawn::get_possible_moves(int board_width, int board_height, const std::vect
         };
         for (const BoardLocation& location_to_check : locations_to_check) {
             if (en_passant_capturable_piece->get_location() == location_to_check) {
-                Move en_passant_move = {
+                Move en_passant_move(
                     MoveType::CAPTURE,
                     { location_to_check.x, one_square_ahead_y },
                     en_passant_capturable_piece,
-                    false
-                };
+                    false,
+                    nullptr,
+                    {0, 0}
+                );
                 possible_moves.push_back(en_passant_move);
                 break;
             }

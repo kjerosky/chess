@@ -2,7 +2,7 @@
 
 Rook::Rook(PieceColor color, BoardLocation location)
 :
-Piece(color, location) {
+Piece(PieceType::ROOK, color, location) {
     // do nothing for now
 }
 

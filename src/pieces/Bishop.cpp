@@ -2,7 +2,7 @@
 
 Bishop::Bishop(PieceColor color, BoardLocation location)
 :
-Piece(color, location) {
+Piece(PieceType::BISHOP, color, location) {
     // do nothing for now
 }
 

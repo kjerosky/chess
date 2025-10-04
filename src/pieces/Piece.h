@@ -11,27 +11,41 @@ enum class PieceColor {
     BLACK
 };
 
+enum class PieceType {
+    PAWN,
+    ROOK,
+    KNIGHT,
+    BISHOP,
+    QUEEN,
+    KING
+};
+
 // --------------------------------------------------------------------------
 
 class Piece {
 
 public:
 
-    Piece(PieceColor color, BoardLocation location);
+    Piece(PieceType type, PieceColor color, BoardLocation location);
     virtual ~Piece() = 0;
 
     virtual void get_possible_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, Piece* en_passant_capturable_piece, std::vector<Move>& possible_moves) = 0;
     virtual bool is_capturable() const = 0;
     virtual int get_piece_texture_index() const = 0;
 
+    PieceType get_type() const;
     BoardLocation get_location() const;
     PieceColor get_color() const;
     void move_to(const BoardLocation& destination);
+    bool has_been_moved() const;
+    void mark_as_moved();
 
 protected:
 
+    PieceType type;
     BoardLocation location;
     PieceColor color;
+    bool has_moved;
     
     void add_directional_moves(int board_width, int board_height, const std::vector<Piece*>& active_pieces, int dx, int dy, std::vector<Move>& possible_moves);
     void process_possible_destinations(int board_width, int board_height, const std::vector<Piece*>& active_pieces, const std::vector<BoardLocation>& destinations, std::vector<Move>& possible_moves);

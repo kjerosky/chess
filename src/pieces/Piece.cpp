@@ -1,15 +1,23 @@
 #include "Piece.h"
 
-Piece::Piece(PieceColor color, BoardLocation location)
+Piece::Piece(PieceType type, PieceColor color, BoardLocation location)
 :
+type(type),
 color(color),
-location(location) {
+location(location),
+has_moved(false) {
     // do nothing for now
 }
 
 // --------------------------------------------------------------------------
 
 Piece::~Piece() = default;
+
+// --------------------------------------------------------------------------
+
+PieceType Piece::get_type() const {
+    return type;
+}
 
 // --------------------------------------------------------------------------
 
@@ -38,12 +46,14 @@ void Piece::add_directional_moves(int board_width, int board_height, const std::
             break;
         }
 
-        Move move = {
+        Move move(
             move_type,
             {x, y},
             move_type == MoveType::CAPTURE ? piece_at_destination : nullptr,
-            false
-        };
+            false,
+            nullptr,
+            {0, 0}
+        );
         possible_moves.push_back(move);
 
         if (move_type == MoveType::CAPTURE) {
@@ -75,7 +85,7 @@ void Piece::move_to(const BoardLocation& destination) {
 // --------------------------------------------------------------------------
 
 Move Piece::create_move_for_destination(const BoardLocation& destination, int board_width, int board_height, const std::vector<Piece*>& active_pieces) {
-    Move move = {MoveType::INVALID, destination, nullptr, false};
+    Move move(MoveType::INVALID, destination, nullptr, false, nullptr, {0, 0});
 
     if (destination.x >= 0 && destination.x < board_width && destination.y >= 0 && destination.y < board_height) {
         Piece* piece_at_destination = get_piece_at_destination(destination, active_pieces);
@@ -88,4 +98,16 @@ Move Piece::create_move_for_destination(const BoardLocation& destination, int bo
     }
 
     return move;
+}
+
+// --------------------------------------------------------------------------
+
+bool Piece::has_been_moved() const {
+    return has_moved;
+}
+
+// --------------------------------------------------------------------------
+
+void Piece::mark_as_moved() {
+    has_moved = true;
 }
