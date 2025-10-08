@@ -20,7 +20,8 @@ white_piece_color({ 255, 255, 255, 255 }),
 black_piece_color({ 0, 0, 0, 255 }),
 selected_color({ 255, 215, 0, 255 }),
 move_color({ 0, 255, 0, 255 }),
-capture_color({ 255, 0, 0, 255 }) {
+capture_color({ 255, 0, 0, 255 }),
+pawn_promotion_background_color({ 128, 128, 128, 255 }) {
     reset();
 }
 
@@ -117,6 +118,14 @@ void Game::process_input(int window_width, int window_height, MouseClickEvent* m
         case GameState::BLACK_SELECTING_DESTINATION:
             handle_piece_destination_selection(click_location, mouse_click_event->button == SDL_BUTTON_RIGHT, GameState::WHITE_SELECTING_PIECE, GameState::BLACK_SELECTING_PIECE);
             break;
+
+        case GameState::WHITE_PAWN_PROMOTING:
+            handle_pawn_promotion_selection(click_location, GameState::BLACK_SELECTING_PIECE);
+            break;
+
+        case GameState::BLACK_PAWN_PROMOTING:
+            handle_pawn_promotion_selection(click_location, GameState::WHITE_SELECTING_PIECE);
+            break;
     }
 }
 
@@ -143,7 +152,7 @@ void Game::render(SDL_Renderer* renderer) {
     }
 
     // Render possible move indicators (underneath the pieces)
-    if (selected_piece != nullptr) {
+    if (state == GameState::WHITE_SELECTING_DESTINATION || state == GameState::BLACK_SELECTING_DESTINATION) {
         render_sprite_on_board(renderer, selected_piece->get_location(), 0, 1, selected_color);
         for (Move move : possible_moves_for_selected_piece) {
             if (move.type == MoveType::CAPTURE) {
@@ -160,6 +169,11 @@ void Game::render(SDL_Renderer* renderer) {
     for (Piece* piece : active_pieces) {
         SDL_Color& piece_color = piece->get_color() == PieceColor::WHITE ? white_piece_color : black_piece_color;
         render_sprite_on_board(renderer, piece->get_location(), piece->get_piece_texture_index(), 0, piece_color);
+    }
+
+    // Render pawn promotion options
+    if (state == GameState::WHITE_PAWN_PROMOTING || state == GameState::BLACK_PAWN_PROMOTING) {
+        render_pawn_promotion_interface(renderer);
     }
 
     SDL_SetTextureColorMod(pieces_texture, original_texture_color_mod.r, original_texture_color_mod.g, original_texture_color_mod.b);
@@ -224,8 +238,15 @@ void Game::handle_piece_destination_selection(const BoardLocation& click_locatio
                 selected_piece->move_to(move.destination);
                 selected_piece->mark_as_moved();
 
-                reset_piece_selection();
-                state = next_state_on_move;
+                bool is_white_pawn_promoting = selected_piece->get_type() == PieceType::PAWN && selected_piece->get_color() == PieceColor::WHITE && selected_piece->get_location().y == board_vertical_squares - 1;
+                bool is_black_pawn_promoting = selected_piece->get_type() == PieceType::PAWN && selected_piece->get_color() == PieceColor::BLACK && selected_piece->get_location().y == 0;
+                if (is_white_pawn_promoting || is_black_pawn_promoting) {
+                    setup_pawn_promotion_interface();
+                    state = is_white_pawn_promoting ? GameState::WHITE_PAWN_PROMOTING : GameState::BLACK_PAWN_PROMOTING;
+                } else {
+                    reset_piece_selection();
+                    state = next_state_on_move;
+                }
                 break;
             }
         }
@@ -254,4 +275,83 @@ void Game::render_sprite_on_board(SDL_Renderer* renderer, const BoardLocation& l
 
     SDL_SetTextureColorMod(pieces_texture, color.r, color.g, color.b);
     SDL_RenderTexture(renderer, pieces_texture, &sprite_texture_rect, &sprite_rect);
+}
+
+// --------------------------------------------------------------------------
+
+void Game::setup_pawn_promotion_interface() {
+    pawn_promotion_interface_location = {
+        selected_piece->get_location().x,
+        selected_piece->get_color() == PieceColor::WHITE ? board_vertical_squares - 2 : 1
+    };
+
+    pawn_promotion_interface_location.x = std::min(pawn_promotion_interface_location.x, board_horizontal_squares - 4);
+}
+
+// --------------------------------------------------------------------------
+
+void Game::render_pawn_promotion_interface(SDL_Renderer* renderer) {
+    int promotion_interface_board_x = pawn_promotion_interface_location.x;
+    std::vector<int> piece_texture_sprites_x = { 1, 4, 2, 3 };
+    for (int sprite_x : piece_texture_sprites_x) {
+        // Render the background square
+        SDL_FRect sprite_destination_rect = {
+            board_x + promotion_interface_board_x * board_square_width,
+            board_y + (board_vertical_squares - 1 - pawn_promotion_interface_location.y) * board_square_height,
+            board_square_width,
+            board_square_height
+        };
+
+        SDL_SetRenderDrawColor(renderer, pawn_promotion_background_color.r, pawn_promotion_background_color.g, pawn_promotion_background_color.b, pawn_promotion_background_color.a);
+        SDL_RenderFillRect(renderer, &sprite_destination_rect);
+
+        // Render the current piece sprite
+        BoardLocation sprite_location = { promotion_interface_board_x, pawn_promotion_interface_location.y };
+        SDL_Color& piece_color = selected_piece->get_color() == PieceColor::WHITE ? white_piece_color : black_piece_color;
+        render_sprite_on_board(renderer, sprite_location, sprite_x, 0, piece_color);
+
+        promotion_interface_board_x++;
+    }
+}
+
+// --------------------------------------------------------------------------
+
+void Game::handle_pawn_promotion_selection(const BoardLocation& click_location, GameState next_state_on_promotion) {
+    if (click_location.y != pawn_promotion_interface_location.y) {
+        return;
+    }
+
+    int piece_index = click_location.x - pawn_promotion_interface_location.x;
+    if (piece_index < 0 || piece_index > 3) {
+        return;
+    }
+
+    // Replace the pawn with the new piece
+    Piece* promoted_piece = nullptr;
+    switch (piece_index) {
+        case 0:
+            promoted_piece = new Queen(selected_piece->get_color(), selected_piece->get_location());
+            break;
+
+        case 1:
+            promoted_piece = new Rook(selected_piece->get_color(), selected_piece->get_location());
+            break;
+
+        case 2:
+            promoted_piece = new Bishop(selected_piece->get_color(), selected_piece->get_location());
+            break;
+            
+        case 3:
+            promoted_piece = new Knight(selected_piece->get_color(), selected_piece->get_location());
+            break;
+    }
+
+    active_pieces.erase(std::remove(active_pieces.begin(), active_pieces.end(), selected_piece), active_pieces.end());
+    delete selected_piece;
+
+    active_pieces.push_back(promoted_piece);
+    promoted_piece->mark_as_moved();
+
+    reset_piece_selection();
+    state = next_state_on_promotion;
 }

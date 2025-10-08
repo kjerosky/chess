@@ -24,7 +24,9 @@ private:
         WHITE_SELECTING_PIECE,
         BLACK_SELECTING_PIECE,
         WHITE_SELECTING_DESTINATION,
-        BLACK_SELECTING_DESTINATION
+        BLACK_SELECTING_DESTINATION,
+        WHITE_PAWN_PROMOTING,
+        BLACK_PAWN_PROMOTING
     };
 
     int board_horizontal_squares;
@@ -38,6 +40,8 @@ private:
     SDL_Color selected_color;
     SDL_Color move_color;
     SDL_Color capture_color;
+    SDL_Color pawn_promotion_background_color;
+    SDL_Color pawn_promotion_hover_color;
 
     std::vector<Piece*> active_pieces;
 
@@ -52,12 +56,16 @@ private:
     Piece* selected_piece;
     std::vector<Move> possible_moves_for_selected_piece;
     Piece* en_passant_capturable_piece;
+    BoardLocation pawn_promotion_interface_location;
 
     void recalculate_board_dimensions(int window_width, int window_height);
     void render_sprite_on_board(SDL_Renderer* renderer, const BoardLocation& location, int sprite_x, int sprite_y, const SDL_Color& color);
     void reset_piece_selection();
     void handle_piece_selection(Piece* clicked_piece, PieceColor piece_color, GameState next_state_on_successful_selection);
     void handle_piece_destination_selection(const BoardLocation& click_location, bool is_cancel_requested, GameState next_state_on_move, GameState next_state_on_cancel);
+    void setup_pawn_promotion_interface();
+    void render_pawn_promotion_interface(SDL_Renderer* renderer);
+    void handle_pawn_promotion_selection(const BoardLocation& click_location, GameState next_state_on_promotion);
 };
 
 #endif
